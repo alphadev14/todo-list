@@ -1,0 +1,194 @@
+body {
+  background: #fafbfc;
+}
+
+.management-wrapper {
+  min-height: 100vh;
+  background: #fafbfc;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.management-header {
+  width: 100%;
+  max-width: 800px;
+  margin: 32px auto 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.management-header .ant-avatar {
+  float: right;
+  margin-top: -32px;
+}
+
+.management-card {
+  max-width: 800px;
+  width: 100%;
+  margin: 24px auto 0 auto;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  background: #fff;
+  border: none;
+}
+
+.management-card .ant-input {
+  background: #f5f6fa;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+}
+
+.management-card .ant-btn {
+  border-radius: 8px;
+  background: #e5e7eb;
+  color: #111;
+  font-weight: 500;
+  border: none;
+  margin-right: 8px;
+}
+.management-card .ant-btn:last-child {
+  background: #fff;
+  color: #111;
+  border: 1px solid #e5e7eb;
+}
+
+.management-card .ant-btn:active,
+.management-card .ant-btn:focus {
+  background: #111;
+  color: #fff;
+}
+
+.management-error {
+  color: #ef4444;
+  background: #fee2e2;
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.management-filter {
+  max-width: 800px;
+  width: 100%;
+  margin: 16px auto 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f5f6fa;
+  border-radius: 8px;
+  padding: 8px 16px;
+}
+
+.management-filter .ant-tag {
+  font-size: 1rem;
+  padding: 4px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #e5e7eb;
+  color: #111;
+  border: none;
+}
+.management-filter .ant-tag[style*="#111"] {
+  background: #111 !important;
+  color: #fff !important;
+}
+
+.ant-list {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  margin-top: 8px;
+}
+
+.ant-list-item {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.management-search {
+  max-width: 800px;
+  width: 100%;
+  margin: 16px auto 0 auto;
+  background: #f5f6fa;
+  border-radius: 8px;
+  padding: 8px 16px;
+  border: none;
+}
+
+.management-empty {
+  text-align: center;
+  color: #6b7280;
+  margin-top: 32px;
+}
+
+@media (max-width: 900px) {
+  .management-header,
+  .management-card,
+  .management-filter,
+  .management-search {
+    max-width: 100%;
+    width: 98vw;
+  }
+}
+@media (max-width: 600px) {
+  .management-wrapper {
+    padding: 0;
+    align-items: stretch;
+  }
+  .management-header {
+    max-width: 100vw;
+    padding: 0 8px;
+    margin: 24px 0 0 0;
+  }
+  .management-card {
+    max-width: 100vw;
+    width: 100vw;
+    margin: 16px 0 0 0;
+    border-radius: 20px 20px 0 0;
+    box-shadow: none;
+    border: none;
+    padding: 0 8px;
+  }
+  .management-filter {
+    max-width: 100vw;
+    width: 100vw;
+    margin: 8px 0 0 0;
+    border-radius: 0;
+    padding: 8px 4px;
+    font-size: 0.95rem;
+  }
+  .management-search {
+    max-width: 100vw;
+    width: 100vw;
+    margin: 8px 0 0 0;
+    border-radius: 0;
+    padding: 8px 4px;
+  }
+  .ant-list {
+    border-radius: 0;
+    box-shadow: none;
+    margin-top: 4px;
+  }
+  .ant-list-item {
+    font-size: 0.95rem;
+  }
+  .management-empty {
+    font-size: 0.95rem;
+    margin-top: 16px;
+  }
+}
+@media (max-width: 400px) {
+  .management-header,
+  .management-card,
+  .management-filter,
+  .management-search {
+    padding: 0 2px;
+    font-size: 0.9rem;
+  }
+  .ant-list-item {
+    font-size: 0.9rem;
+  }
+}
