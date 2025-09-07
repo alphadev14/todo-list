@@ -1,13 +1,83 @@
+﻿using System.Text;
+using server.BLL.Todo;
+using server.DAO.Todo;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using server.Services;
+using server.BLL.Auth;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// ================== Services ==================
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Thêm authorize vào Swagger
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Nhập JWT token vào đây: Bearer {token}",
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
 
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
+
+// ========== CORS ==========
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+// ========== JWT Authentication ==========
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "super-secret-key-123";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "todo-api";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+    });
+
+// ========== Dependency Injection ==========
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddSingleton<TodoDAO>();
+builder.Services.AddScoped<TodoBLL>();
+builder.Services.AddScoped<AuthBLL>();
+
+// ================== Build App ==================
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Swagger UI
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -15,30 +85,35 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
+app.UseAuthentication(); // Quan trọng: phải đặt trước UseAuthorization
+app.UseAuthorization();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+app.MapControllers();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+
+/* 🔑 3 loại lifetime trong DI
+ * 1. Singleton
+    + Tạo một instance duy nhất trong suốt vòng đời ứng dụng.
+    + Tất cả request, tất cả user → đều dùng chung instance này.
+    + Thường dùng cho:
+        Config tĩnh, service không thay đổi state theo user.
+        Ví dụ: logging service, cache tạm trong memory, DAO giả lập chưa có DB.
+
+   2. Scoped
+     + Tạo một instance cho mỗi request HTTP.
+     + Cùng một request → tất cả chỗ inject sẽ dùng chung instance.
+     + Request khác → tạo instance khác.
+     + Thường dùng cho:
+        BLL (business logic layer) → mỗi request cần xử lý riêng.
+        Repository/DbContext (khi dùng Entity Framework).
+    
+    3. Transient
+     + Mỗi lần inject → tạo instance mới.
+     + Không giữ state gì cả.
+     + Thường dùng cho:
+        Service nhỏ, stateless, xử lý ngắn hạn.
+        Helper, utility service.
+ */
