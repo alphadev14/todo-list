@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using server.BLL.Auth;
 using server.BO.Auth;
+using System.Net.WebSockets;
 
 namespace server.Controller.Auth
 {
@@ -23,6 +24,13 @@ namespace server.Controller.Auth
                 return Ok(result);
 
             return Unauthorized(new {message = result.ErrorMessage});
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register([FromBody] RegisterRequestBO request)
+        {
+            var result = await _authBLL.RegisterAsync(request);
+            return Ok(result);
         }
     }
 }

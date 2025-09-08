@@ -7,6 +7,7 @@ using server.Services;
 using server.BLL.Auth;
 using Microsoft.EntityFrameworkCore;
 using server.Data;
+using server.DAO.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,6 +82,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<TodoDAO>();
 builder.Services.AddScoped<TodoBLL>();
 builder.Services.AddScoped<AuthBLL>();
+builder.Services.AddScoped<AuthDAO>();
 
 // ================== Build App ==================
 var app = builder.Build();

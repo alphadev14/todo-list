@@ -24,4 +24,12 @@
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public bool IsDeleted { get; set; } = false;
     }
+
+    public class  RegisterRequestBO
+    {
+        public string Password { get; set; }
+        public string Username { get; set; }
+        public string PasswordAgain { get; set; }
+        public string Email { get; set; }
+    }
 }
