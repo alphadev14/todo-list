@@ -4,11 +4,17 @@ namespace server.BO.User
 {
     public class UserBO
     {
-        public int Id { get; set; }
+        public int UserId { get; set; }             // Khóa chính
+        public string Username { get; set; }    // Tên đăng nhập
+        public string PasswordHash { get; set; } // Mật khẩu đã hash
         public string Email { get; set; }
-        public string PasswordHash { get; set; }
-        public string Role { get; set; } = "USER"; // USER, ADMIN
-        public List<TodoBO> Todos { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public string CreatedUser { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+        public string? UpdatedUser { get; set; }
+        public DateTime? DeletedDate { get; set; }
+        public string? DeletedUser { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 
 }

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using server.Services;
 using server.BLL.Auth;
+using Microsoft.EntityFrameworkCore;
+using server.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,12 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
+// ================== DB ==================
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
 
 // ========== CORS ==========
 builder.Services.AddCors(options =>
