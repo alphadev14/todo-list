@@ -17,4 +17,8 @@ namespace server.BO.User
         public bool IsDeleted { get; set; } = false;
     }
 
+    public class UserRequestBO
+    {
+        public string Username { get; set; }
+    }
 }
