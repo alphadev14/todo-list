@@ -11,11 +11,21 @@ namespace server.BO.Todo
         public int Priority { get; set; } = 0;      // Độ ưu tiên
         public DateTime? DueDate { get; set; }      // Ngày hết hạn
         public DateTime CreatedDate { get; set; } = DateTime.Now;
-        public string CreatedUser { get; set; }
+        public string? CreatedUser { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public string? UpdatedUser { get; set; }
         public DateTime? DeletedDate { get; set; }
         public string? DeletedUser { get; set; }
         public bool IsDeleted { get; set; } = false;
+    }
+
+    public class TodoRequestBO
+    {
+        public string? Keyword { get; set; }
+        public string? Status { get; set; }
+        public DateTime FromDate { get; set; }
+        public DateTime ToDate { get; set; }
+        public int PageIndex { get; set; }
+        public int PageSize { get; set; }
     }
 }

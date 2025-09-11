@@ -81,7 +81,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // ========== Dependency Injection ==========
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddSingleton<TodoDAO>();
+builder.Services.AddScoped<TodoDAO>();
 builder.Services.AddScoped<TodoBLL>();
 builder.Services.AddScoped<AuthBLL>();
 builder.Services.AddScoped<AuthDAO>();
