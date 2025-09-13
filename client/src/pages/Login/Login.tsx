@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Form, Input, Button, Typography, Alert } from "antd";
 import "./Login.css";
+import type { LoginModel } from "../../models/Auth";
+import { AuthApi } from "../../api/authApi";
 
 const { Title, Text } = Typography;
 
@@ -10,18 +12,28 @@ const Login: React.FC = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const onFinish = (values: { email: string; password: string }) => {
+  const onFinish = async (values: LoginModel) => {
     setLoading(true);
-    setError("");
-    setSuccess("");
-    setTimeout(() => {
-      if (values.email === "test@email.com" && values.password === "123456") {
-        setSuccess("Đăng nhập thành công!");
-      } else {
-        setError("Email hoặc mật khẩu không đúng!");
-      }
-      setLoading(false);
-    }, 1000);
+    console.log("Received values of form: ", values);
+    try {
+      const response = await AuthApi.login(values);
+      setSuccess("Đăng nhập thành công!");
+      setError("");
+      console.log("reponse in line 22: ", response);
+
+      // Lưu token vào localStorage
+      localStorage.setItem("token", response.data.accessToken);
+      localStorage.setItem("refreshToken", response.data.refreshToken);
+
+      // Redirect về trang home
+      window.location.href = "/";
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Đăng nhập thất bại!");
+      setSuccess("");
+    }
+    setLoading(false);
   };
 
   return (
@@ -34,18 +46,23 @@ const Login: React.FC = () => {
           Đăng nhập vào tài khoản của bạn để quản lý todos
         </Text>
         <Form.Item
-          label="Email"
-          name="email"
-          rules={[{ required: true, message: "Vui lòng nhập email!" }]}
+          label="Tăn đăng nhập hoặc email"
+          name="username"
+          rules={[
+            {
+              required: true,
+              message: "Vui lòng nhập tên đăng nhập hoặc email!",
+            },
+          ]}
         >
-          <Input placeholder="your@email.com" type="email" />
+          <Input placeholder="Tên đăng nhập hoặc email" type="username" />
         </Form.Item>
         <Form.Item
           label="Mật khẩu"
           name="password"
           rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
         >
-          <Input.Password placeholder="********" />
+          <Input.Password placeholder="Mật khẩu" />
         </Form.Item>
         {error && (
           <Alert

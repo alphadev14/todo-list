@@ -37,7 +37,7 @@ const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           }
         >
-          <Route path="/management" element={<Management />} />
+          <Route path="/" element={<Management />} />
         </Route>
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
