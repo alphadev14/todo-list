@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Form, Input, Button, Typography, Alert } from "antd";
+import { Link, useNavigate } from "react-router-dom";
+import { Form, Input, Button, Typography, Alert, message } from "antd";
 import "./Register.css";
+import type { RegisterModel } from "../../models/Auth";
+import { AuthApi } from "../../api/authApi";
 
 const { Title, Text } = Typography;
 
@@ -9,24 +11,38 @@ const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigator = useNavigate();
 
-  const onFinish = (values: {
-    name: string;
-    email: string;
-    password: string;
-    confirm: string;
-  }) => {
+  const onFinish = async (values: RegisterModel) => {
     setLoading(true);
     setError("");
     setSuccess("");
-    setTimeout(() => {
-      if (values.password !== values.confirm) {
-        setError("Mật khẩu xác nhận không khớp!");
-      } else {
-        setSuccess("Đăng ký thành công!");
-      }
+
+    if (values.password !== values.passwordConfirm) {
+      message.error("Mật khẩu không khớp, vui lòng kiểm tra lại.");
       setLoading(false);
-    }, 1000);
+      return;
+    }
+
+    try {
+      const res = await AuthApi.register(values);
+      setSuccess(res.data.message || "Đăng ký thành công!");
+
+      // Chuyển về trang login
+      setTimeout(() => {
+        navigator("/login");
+      }, 1000);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      const errorMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Có lỗi xảy ra, vui lòng thử lại!";
+      message.error(errorMsg);
+      setError(errorMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,8 +55,8 @@ const Register: React.FC = () => {
           Tạo tài khoản mới để bắt đầu quản lý todos
         </Text>
         <Form.Item
-          label="Tên"
-          name="name"
+          label="Tên đăng nhập"
+          name="username"
           rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
         >
           <Input placeholder="Tên của bạn" />
@@ -61,7 +77,7 @@ const Register: React.FC = () => {
         </Form.Item>
         <Form.Item
           label="Xác nhận mật khẩu"
-          name="confirm"
+          name="passwordConfirm"
           rules={[{ required: true, message: "Vui lòng xác nhận mật khẩu!" }]}
         >
           <Input.Password placeholder="********" />
