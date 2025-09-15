@@ -26,7 +26,7 @@
         public bool IsDeleted { get; set; } = false;
     }
 
-    public class  RegisterRequestBO
+    public class RegisterRequestBO
     {
         public string Password { get; set; }
         public string Username { get; set; }

@@ -1,7 +1,8 @@
+import type { TodoRequestModel } from "../models/Todo";
 import AxiosClient from "./AxiosClient";
 
 export const todoApi = {
-  getTodos: () => AxiosClient.get("/todos"),
+  getTodos: (request: TodoRequestModel) => AxiosClient.post("Todo/GetTodos", request),
   createTodo: (data: { title: string; completed: boolean }) =>
     AxiosClient.post("/todos", data),
 }

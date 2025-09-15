@@ -1,15 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Input, Button, Tag, List, Typography, message } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import "./Management.css";
+import type { TodoModel, TodoRequestModel } from "../../models/Todo";
+import { todoApi } from "../../api/TodoApi";
+import { useLoading } from "../../contexts/LoadingContext";
 
 const { Title, Text } = Typography;
-
-interface Todo {
-  id: number;
-  title: string;
-  completed: boolean;
-}
 
 const filterOptions = [
   { label: "Tất cả", value: "all" },
@@ -17,47 +14,62 @@ const filterOptions = [
   { label: "Đã hoàn thành", value: "completed" },
 ];
 
+const initRequestParam: TodoRequestModel = {
+  keyword: "",
+  status: "",
+  fromDate: new Date(new Date().setDate(-20)),
+  toDate: new Date(),
+  pageIndex: 1,
+  pageSize: 20,
+};
+
 const Management: React.FC = () => {
-  const [todos, setTodos] = useState<Todo[]>([]);
+  const { showLoading, hideLoading } = useLoading();
+  const [request, setRequest] = useState<TodoRequestModel>(initRequestParam);
+  const [todos, setTodos] = useState<TodoModel[]>([]);
   const [title, setTitle] = useState("");
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+
+  const onGetTodos = async () => {
+    showLoading();
+    try {
+      const res = await todoApi.getTodos(request);
+      console.log(res.data);
+      setTodos(res.data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      message.error(
+        err?.response?.data?.message ||
+          "Lỗi lấy dữ liệu danh sách việc cần làm."
+      );
+    } finally {
+      hideLoading();
+    }
+  };
+
+  useEffect(() => {
+    onGetTodos();
+  }, []);
 
   const handleAdd = () => {
     if (!title.trim()) {
       setError("Vui lòng nhập tiêu đề todo!");
       return;
     }
-    setTodos([...todos, { id: Date.now(), title, completed: false }]);
     setTitle("");
     setError("");
     message.success("Thêm todo thành công!");
   };
-
-  const handleToggle = (id: number) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-  };
-
-  const filteredTodos = todos
-    .filter((todo) => {
-      if (filter === "active") return !todo.completed;
-      if (filter === "completed") return todo.completed;
-      return true;
-    })
-    .filter((todo) => todo.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="management-wrapper">
       <div className="management-header">
         <Title level={4}>Xin chào, phan tam!</Title>
         <Text>
-          Bạn có {todos.filter((t) => !t.completed).length} todo chưa hoàn thành
-          và {todos.filter((t) => t.completed).length} todo đã hoàn thành.
+          Bạn có {todos.filter((t) => !t.status).length} todo chưa hoàn thành và{" "}
+          {todos.filter((t) => t.status).length} todo đã hoàn thành.
         </Text>
       </div>
       <Card
@@ -115,7 +127,7 @@ const Management: React.FC = () => {
         ))}
       </div>
       <Card style={{ marginTop: 16, maxWidth: 800, width: "100%" }}>
-        {filteredTodos.length === 0 ? (
+        {todos.length === 0 ? (
           <Text type="secondary">
             Bạn chưa có todo nào.
             <br />
@@ -123,25 +135,18 @@ const Management: React.FC = () => {
           </Text>
         ) : (
           <List
-            dataSource={filteredTodos}
+            dataSource={todos}
             renderItem={(todo) => (
               <List.Item
                 style={{ padding: "12px 16px", borderRadius: 4 }}
                 actions={[
-                  <Tag color={todo.completed ? "success" : "default"}>
-                    {todo.completed ? "Đã hoàn thành" : "Chưa hoàn thành"}
+                  <Tag color={todo.status ? "success" : "default"}>
+                    {todo.status ? "Đã hoàn thành" : "Chưa hoàn thành"}
                   </Tag>,
                 ]}
               >
                 <List.Item.Meta
-                  avatar={
-                    <input
-                      type="checkbox"
-                      checked={todo.completed}
-                      onChange={() => handleToggle(todo.id)}
-                      style={{ marginRight: 8 }}
-                    />
-                  }
+                  avatar={<input type="checkbox" style={{ marginRight: 8 }} />}
                   title={todo.title}
                 />
               </List.Item>
