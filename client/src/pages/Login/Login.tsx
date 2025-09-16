@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Form, Input, Button, Typography, Alert } from "antd";
 import "./Login.css";
 import type { LoginModel } from "../../models/Auth";
-import { AuthApi } from "../../api/authApi";
+import { AuthApi } from "../../api/AuthApi";
+import axios from "axios";
 
 const { Title, Text } = Typography;
 
@@ -27,10 +28,12 @@ const Login: React.FC = () => {
 
       // Redirect về trang home
       window.location.href = "/";
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Đăng nhập thất bại!");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message ?? "Có lỗi xảy ra");
+      } else {
+        setError("Lỗi không xác định");
+      }
       setSuccess("");
     }
     setLoading(false);

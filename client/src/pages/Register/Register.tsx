@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { Form, Input, Button, Typography, Alert, message } from "antd";
 import "./Register.css";
 import type { RegisterModel } from "../../models/Auth";
-import { AuthApi } from "../../api/authApi";
+import { AuthApi } from "../../api/AuthApi";
+import axios from "axios";
 
 const { Title, Text } = Typography;
 
@@ -32,14 +33,12 @@ const Register: React.FC = () => {
       setTimeout(() => {
         navigator("/login");
       }, 1000);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      const errorMsg =
-        err.response?.data?.message ||
-        err.message ||
-        "Có lỗi xảy ra, vui lòng thử lại!";
-      message.error(errorMsg);
-      setError(errorMsg);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message ?? "Có lỗi xảy ra");
+      } else {
+        setError("Lỗi không xác định");
+      }
     } finally {
       setLoading(false);
     }

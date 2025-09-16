@@ -6,6 +6,7 @@ import type { TodoModel, TodoRequestModel } from "../../models/Todo";
 import { todoApi } from "../../api/TodoApi";
 import { useLoading } from "../../contexts/LoadingContext";
 import type { BaseButtonProps } from "antd/es/button/button";
+import axios from "axios";
 
 const { Title, Text } = Typography;
 
@@ -52,12 +53,12 @@ const Management: React.FC = () => {
       const res = await todoApi.getTodos(request);
       console.log(res.data);
       setTodos(res.data);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      message.error(
-        err?.response?.data?.message ||
-          "Lỗi lấy dữ liệu danh sách việc cần làm."
-      );
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message ?? "Có lỗi xảy ra");
+      } else {
+        setError("Lỗi không xác định");
+      }
     } finally {
       hideLoading();
     }
@@ -90,8 +91,12 @@ const Management: React.FC = () => {
       setError("");
       message.success("Thêm todo thành công!");
       await onGetTodos();
-    } catch (err: any) {
-      setError(err?.response?.data?.message);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message ?? "Có lỗi xảy ra");
+      } else {
+        setError("Lỗi không xác định");
+      }
     } finally {
       hideLoading();
     }
