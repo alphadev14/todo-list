@@ -1,5 +1,5 @@
 import axios from "axios";
-import { AuthApi } from "./authApi";
+import { AuthApi } from "./AuthApi";
 
 const AxiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5031/api/v1",
