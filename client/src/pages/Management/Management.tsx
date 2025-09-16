@@ -5,13 +5,14 @@ import "./Management.css";
 import type { TodoModel, TodoRequestModel } from "../../models/Todo";
 import { todoApi } from "../../api/TodoApi";
 import { useLoading } from "../../contexts/LoadingContext";
+import type { BaseButtonProps } from "antd/es/button/button";
 
 const { Title, Text } = Typography;
 
 const filterOptions = [
-  { label: "Tất cả", value: "all" },
-  { label: "Chưa hoàn thành", value: "active" },
-  { label: "Đã hoàn thành", value: "completed" },
+  { label: "Tất cả", value: "all", color: "blue" },
+  { label: "Chưa hoàn thành", value: "active", color: "danger" },
+  { label: "Đã hoàn thành", value: "completed", color: "green" },
 ];
 
 const initRequestParam: TodoRequestModel = {
@@ -23,14 +24,27 @@ const initRequestParam: TodoRequestModel = {
   pageSize: 20,
 };
 
+const initTodo: TodoModel = {
+  title: "",
+  description: "",
+  todoId: 0,
+  status: "",
+  priorty: 0,
+  dueDate: new Date(new Date().setDate(7)),
+};
+
 const Management: React.FC = () => {
   const { showLoading, hideLoading } = useLoading();
   const [request, setRequest] = useState<TodoRequestModel>(initRequestParam);
+  const [createTodo, setCreateTodo] = useState<TodoModel>(initTodo);
   const [todos, setTodos] = useState<TodoModel[]>([]);
-  const [title, setTitle] = useState("");
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+
+  const onChangeFilter = () => {
+    setRequest(initRequestParam);
+  };
 
   const onGetTodos = async () => {
     showLoading();
@@ -49,18 +63,38 @@ const Management: React.FC = () => {
     }
   };
 
+  const onChangeValue = ({
+    field,
+    value,
+  }: {
+    field: string;
+    value: string | number | null;
+  }) => {
+    setCreateTodo((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   useEffect(() => {
     onGetTodos();
   }, []);
 
-  const handleAdd = () => {
-    if (!title.trim()) {
+  const onAddTodo = async () => {
+    if (!createTodo.title.trim()) {
       setError("Vui lòng nhập tiêu đề todo!");
       return;
     }
-    setTitle("");
-    setError("");
-    message.success("Thêm todo thành công!");
+    try {
+      await todoApi.InsertTodo(createTodo);
+      setError("");
+      message.success("Thêm todo thành công!");
+      await onGetTodos();
+    } catch (err: any) {
+      setError(err?.response?.data?.message);
+    } finally {
+      hideLoading();
+    }
   };
 
   return (
@@ -82,14 +116,23 @@ const Management: React.FC = () => {
       >
         <Input
           placeholder="Nhập tiêu đề todo..."
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={createTodo.title}
+          onChange={(e) =>
+            onChangeValue({ field: "title", value: e.target.value })
+          }
           style={{ marginBottom: 12 }}
         />
-        <Button type="default" onClick={handleAdd} style={{ marginRight: 8 }}>
+        <Input
+          placeholder="Nhập mô tả..."
+          value={createTodo.description}
+          onChange={(e) =>
+            onChangeValue({ field: "description", value: e.target.value })
+          }
+          style={{ marginBottom: 12 }}
+        />
+        <Button color="green" variant="solid" onClick={onAddTodo}>
           Thêm todo
         </Button>
-        <Button>Thêm mô tả</Button>
         {error && <div className="management-error">{error}</div>}
       </Card>
       <Input
@@ -103,13 +146,14 @@ const Management: React.FC = () => {
       <div className="management-filter">
         <span>Lọc:</span>
         {filterOptions.map((opt) => (
-          <Tag
+          <Button
             key={opt.value}
-            color={filter === opt.value ? "#111" : "#e5e7eb"}
+            color={opt.color as BaseButtonProps["color"]}
+            variant="filled"
             style={{
-              color: filter === opt.value ? "#fff" : "#111",
               cursor: "pointer",
               marginLeft: 8,
+              fontWeight: filter === opt.value ? "bold" : "600",
             }}
             onClick={() => setFilter(opt.value)}
           >
@@ -117,14 +161,15 @@ const Management: React.FC = () => {
             <span>
               {
                 todos.filter((todo) => {
-                  if (opt.value === "active") return !todo.completed;
-                  if (opt.value === "completed") return todo.completed;
+                  if (opt.value === "active") return !todo.status;
+                  if (opt.value === "completed") return todo.status;
                   return true;
                 }).length
               }
             </span>
-          </Tag>
+          </Button>
         ))}
+        <Button onClick={onChangeFilter}></Button>
       </div>
       <Card style={{ marginTop: 16, maxWidth: 800, width: "100%" }}>
         {todos.length === 0 ? (

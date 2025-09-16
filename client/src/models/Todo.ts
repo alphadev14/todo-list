@@ -5,12 +5,12 @@ export interface TodoModel {
   status: string;
   priorty: number;
   dueDate: Date;
-  createdDate: Date;
-  createdUser: string;
-  updatedDate: Date;
-  updatedUser: string;
-  deletedDate: Date;
-  deletedUser: string;
+  createdDate?: Date;
+  createdUser?: string;
+  updatedDate?: Date;
+  updatedUser?: string;
+  deletedDate?: Date;
+  deletedUser?: string;
 }
 
 export interface TodoRequestModel {

@@ -42,26 +42,6 @@ body {
   font-size: 1rem;
 }
 
-.management-card .ant-btn {
-  border-radius: 8px;
-  background: #e5e7eb;
-  color: #111;
-  font-weight: 500;
-  border: none;
-  margin-right: 8px;
-}
-.management-card .ant-btn:last-child {
-  background: #fff;
-  color: #111;
-  border: 1px solid #e5e7eb;
-}
-
-.management-card .ant-btn:active,
-.management-card .ant-btn:focus {
-  background: #111;
-  color: #fff;
-}
-
 .management-error {
   color: #ef4444;
   background: #fee2e2;
