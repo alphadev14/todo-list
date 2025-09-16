@@ -81,7 +81,7 @@ namespace server.DAO.Todo
             return todos;
         }
 
-        public async Task InsertTodoAsync(TodoBO request)
+        public async Task InsertTodoAsync(TodoBO request, int userId)
         {
             using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
@@ -95,7 +95,7 @@ namespace server.DAO.Todo
             cmd.Parameters.AddWithValue("status", "PENDING");
             cmd.Parameters.AddWithValue("priorty", request.Priority);
             cmd.Parameters.AddWithValue("duedate", (object?)request.DueDate ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("createduser", "admin");
+            cmd.Parameters.AddWithValue("createduser", userId);
 
             await cmd.ExecuteNonQueryAsync();
         }

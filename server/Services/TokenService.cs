@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using server.BO.User;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -14,7 +15,7 @@ namespace server.Services
             _config = config;
         }
 
-        public string GenerateJwtToken(string userName, IEnumerable<Claim>? extraClaims = null)
+        public string GenerateJwtToken(int userId, string userName, IEnumerable<Claim>? extraClaims = null)
         {
             // lấy thông tin từ config
             var jwtKey = _config["Jwt:Key"] ?? "super-secret-key-123";
@@ -25,10 +26,19 @@ namespace server.Services
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userName),
-                new Claim("role", userName == "admin" ? "Admin" : "User"),
+                        // Dùng để lấy UserId trong code
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+
+                // Dùng để map vào HttpContext.User.Identity.Name
+                new Claim(ClaimTypes.Name, userName),
+
+                // Role (ASP.NET Core sẽ map đúng vào User.IsInRole)
+                new Claim(ClaimTypes.Role, userName == "admin" ? "Admin" : "User"),
+
+                // Unique ID của token
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
+
 
             if (extraClaims != null) 
             { 

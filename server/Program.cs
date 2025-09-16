@@ -80,7 +80,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 // ========== Dependency Injection ==========
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<TodoDAO>();
 builder.Services.AddScoped<TodoBLL>();
 builder.Services.AddScoped<AuthBLL>();

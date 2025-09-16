@@ -4,7 +4,7 @@ namespace server.Services
 {
     public interface ITokenService
     {
-        string GenerateJwtToken(string username, IEnumerable<Claim>? extraClaims = null);
+        string GenerateJwtToken(int userId, string username, IEnumerable<Claim>? extraClaims = null);
     }
 }
 

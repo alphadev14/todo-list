@@ -1,6 +1,7 @@
 ﻿
 using server.BO.Todo;
 using server.DAO.Todo;
+using server.Services;
 
 namespace server.BLL.Todo
 {
@@ -8,10 +9,12 @@ namespace server.BLL.Todo
     {
 
         private readonly TodoDAO _todoDAO;
+        private readonly IUserContextService _userContextService;
 
-        public TodoBLL(TodoDAO todoDAO)
+        public TodoBLL(TodoDAO todoDAO, IUserContextService UserContextService)
         {
             _todoDAO = todoDAO;
+            _userContextService = UserContextService;
         }
 
         public async Task<List<TodoBO>> GetTodosAsync(TodoRequestBO request)
@@ -22,8 +25,11 @@ namespace server.BLL.Todo
 
         public async Task InsertTodoAsync(TodoBO request)
         {
-           
-            await _todoDAO.InsertTodoAsync(request);
+           var userId = _userContextService.GetUserId();
+            if (userId == null)
+                throw new Exception("Lỗi không xác định được user thêm công việc.");
+
+            await _todoDAO.InsertTodoAsync(request, userId);
         }
 
         public async Task UpdateStatusTodoAsync(List<TodoBO> request)

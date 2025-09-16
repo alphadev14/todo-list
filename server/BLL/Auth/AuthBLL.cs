@@ -35,7 +35,7 @@ namespace server.BLL.Auth
                 return new LoginResultBO() { Success = false, ErrorMessage = "Tên đăng nhập hoặc mật khẩu không đúng. Vui lòng kiểm tra lại thông tin đăng nhập" };
 
             // Tạo access token 
-            var accessToken = _tokenService.GenerateJwtToken(request.Username);
+            var accessToken = _tokenService.GenerateJwtToken(user.UserId, request.Username);
 
             // Tạo refresh token
             var refreshToken = Guid.NewGuid().ToString("N");
