@@ -5,5 +5,6 @@ export const todoApi = {
   getTodos: (request: TodoRequestModel) => AxiosClient.post("Todo/GetTodos", request),
   createTodo: (data: { title: string; completed: boolean }) =>
     AxiosClient.post("/todos", data),
-  InsertTodo: (request: TodoModel) => AxiosClient.post("Todo/InsertTodo", request)
+  InsertTodo: (request: TodoModel) => AxiosClient.post("Todo/InsertTodo", request),
+  UpdateStatusTodo: (request: TodoModel) => AxiosClient.post("Todo/UpdateStatusTodo", request)
 }

@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Card, Input, Button, Tag, List, Typography, message } from "antd";
+import {
+  Card,
+  Input,
+  Button,
+  Tag,
+  List,
+  Typography,
+  message,
+  Checkbox,
+} from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import "./Management.css";
 import type { TodoModel, TodoRequestModel } from "../../models/Todo";
 import { todoApi } from "../../api/TodoApi";
 import { useLoading } from "../../contexts/LoadingContext";
 import type { BaseButtonProps } from "antd/es/button/button";
 import axios from "axios";
+import "./Management.css";
 
 const { Title, Text } = Typography;
 
@@ -90,7 +99,6 @@ const Management: React.FC = () => {
       await todoApi.InsertTodo(createTodo);
       setError("");
       message.success("Thêm todo thành công!");
-      await onGetTodos();
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message ?? "Có lỗi xảy ra");
@@ -99,6 +107,24 @@ const Management: React.FC = () => {
       }
     } finally {
       hideLoading();
+      await onGetTodos();
+    }
+  };
+
+  const onUpdateStatusTodo = async (todo: TodoModel) => {
+    showLoading();
+    try {
+      await todoApi.UpdateStatusTodo(todo);
+      message.success("Cập nhật trạng thái công việc thành công");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message ?? "Có lỗi xảy ra");
+      } else {
+        setError("Lỗi không xác định");
+      }
+    } finally {
+      hideLoading();
+      await onGetTodos();
     }
   };
 
@@ -166,8 +192,8 @@ const Management: React.FC = () => {
             <span>
               {
                 todos.filter((todo) => {
-                  if (opt.value === "active") return !todo.status;
-                  if (opt.value === "completed") return todo.status;
+                  if (opt.value === "active") return todo.status != "DONE";
+                  if (opt.value === "completed") return todo.status == "DONE";
                   return true;
                 }).length
               }
@@ -190,13 +216,20 @@ const Management: React.FC = () => {
               <List.Item
                 style={{ padding: "12px 16px", borderRadius: 4 }}
                 actions={[
-                  <Tag color={todo.status ? "success" : "default"}>
-                    {todo.status ? "Đã hoàn thành" : "Chưa hoàn thành"}
+                  <Tag color={todo.status == "DONE" ? "success" : "warning"}>
+                    {todo.status == "DONE"
+                      ? "Đã hoàn thành"
+                      : "Chưa hoàn thành"}
                   </Tag>,
                 ]}
               >
                 <List.Item.Meta
-                  avatar={<input type="checkbox" style={{ marginRight: 8 }} />}
+                  avatar={
+                    <Checkbox
+                      onChange={() => onUpdateStatusTodo(todo)}
+                      checked={todo.status == "DONE"}
+                    />
+                  }
                   title={todo.title}
                 />
               </List.Item>

@@ -14,7 +14,7 @@ namespace server.DAO.Todo
             _connectionString = _config.GetConnectionString("DefaultConnection");
         }
 
-        public async Task<List<TodoBO>> GetTodosAsync(TodoRequestBO request)
+        public async Task<List<TodoBO>> GetTodosAsync(TodoRequestBO request, int userId)
         {
             var todos = new List<TodoBO>();
             using var conn = new NpgsqlConnection(_connectionString);
@@ -30,7 +30,7 @@ namespace server.DAO.Todo
                             createddate, 
                             createduser 
                         FROM data.pm_todos 
-                        WHERE isdeleted = false";
+                        WHERE isdeleted = false AND createduser = @userid";
 
            // Build điều kiện
             if (!string.IsNullOrEmpty(request.Keyword))
@@ -58,6 +58,7 @@ namespace server.DAO.Todo
                 cmd.Parameters.AddWithValue("fromDate", request.FromDate);
                 cmd.Parameters.AddWithValue("toDate", request.ToDate);
             }
+            cmd.Parameters.AddWithValue("userid", userId.ToString());
             cmd.Parameters.AddWithValue("pageSize", request.PageSize);
             cmd.Parameters.AddWithValue("offset", (request.PageIndex - 1) * request.PageSize);
 
@@ -96,6 +97,26 @@ namespace server.DAO.Todo
             cmd.Parameters.AddWithValue("priorty", request.Priority);
             cmd.Parameters.AddWithValue("duedate", (object?)request.DueDate ?? DBNull.Value);
             cmd.Parameters.AddWithValue("createduser", userId);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task UpdateStatusTodoAsync(TodoBO request, int userId)
+        {
+            using var conn = new NpgsqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            var sql = @"UPDATE data.pm_todos SET status = @status, updateduser = @updateduser, updateddate = @updateddate WHERE todoid = @todoid AND isdeleted = false";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+
+            var statusUpdate = request.Status == TodoStatus.PENDING.ToString() ? TodoStatus.DONE.ToString() : TodoStatus.PENDING.ToString();
+
+            //Bind parameters
+            cmd.Parameters.AddWithValue("status", statusUpdate);
+            cmd.Parameters.AddWithValue("updateduser", userId);
+            cmd.Parameters.AddWithValue("updateddate", DateTime.Now);
+            cmd.Parameters.AddWithValue("todoid", request.TodoId);
 
             await cmd.ExecuteNonQueryAsync();
         }

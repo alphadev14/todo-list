@@ -36,7 +36,7 @@ namespace server.Controller.Todo
         }
 
         [HttpPost]
-        public async Task UpdateStatusTodo([FromBody] List<TodoBO> request)
+        public async Task UpdateStatusTodo([FromBody] TodoBO request)
         {
             await _todoBLL.UpdateStatusTodoAsync(request);
         }

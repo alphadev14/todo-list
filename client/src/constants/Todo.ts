@@ -1,0 +1,1 @@
+export type TodoStatus = "DONE" | "PENDING" | "IN_PROGRESS" | "CANCELED";

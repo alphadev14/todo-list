@@ -19,7 +19,8 @@ namespace server.BLL.Todo
 
         public async Task<List<TodoBO>> GetTodosAsync(TodoRequestBO request)
         {
-            var todos = await _todoDAO.GetTodosAsync(request);
+            var userId = _userContextService.GetUserId();
+            var todos = await _todoDAO.GetTodosAsync(request, userId);
             return todos;
         }
 
@@ -32,9 +33,10 @@ namespace server.BLL.Todo
             await _todoDAO.InsertTodoAsync(request, userId);
         }
 
-        public async Task UpdateStatusTodoAsync(List<TodoBO> request)
+        public async Task UpdateStatusTodoAsync(TodoBO request)
         {
-            throw new NotImplementedException();
+            var userId = _userContextService.GetUserId();
+            await _todoDAO.UpdateStatusTodoAsync(request, userId);
         }
 
         public async Task InsertMutilTodoAsync(List<TodoBO> request)
