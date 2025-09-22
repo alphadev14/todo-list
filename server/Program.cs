@@ -49,7 +49,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-
 // ========== CORS ==========
 builder.Services.AddCors(options =>
 {
@@ -93,12 +92,9 @@ builder.Services.AddScoped<UserDAO>();
 // ================== Build App ==================
 var app = builder.Build();
 
-// Swagger UI
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Swagger UI (cho cả production luôn, tiện test trên Render)
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
@@ -107,7 +103,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+// Đọc cổng từ biến môi trường (Render cung cấp PORT)
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Run($"http://0.0.0.0:{port}");
 
 
 /* 🔑 3 loại lifetime trong DI

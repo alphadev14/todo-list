@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Card,
   Input,
@@ -20,9 +20,9 @@ import "./Management.css";
 const { Title, Text } = Typography;
 
 const filterOptions = [
-  { label: "Tất cả", value: "all", color: "blue" },
-  { label: "Chưa hoàn thành", value: "active", color: "danger" },
-  { label: "Đã hoàn thành", value: "completed", color: "green" },
+  { label: "Tất cả", value: "", color: "blue" },
+  { label: "Chưa hoàn thành", value: "PENDING", color: "danger" },
+  { label: "Đã hoàn thành", value: "DONE", color: "green" },
 ];
 
 const initRequestParam: TodoRequestModel = {
@@ -48,18 +48,31 @@ const Management: React.FC = () => {
   const [request, setRequest] = useState<TodoRequestModel>(initRequestParam);
   const [createTodo, setCreateTodo] = useState<TodoModel>(initTodo);
   const [todos, setTodos] = useState<TodoModel[]>([]);
-  const [filter, setFilter] = useState("all");
-  const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+  const timeoutRef = useRef<number | null>(null);
 
-  const onChangeFilter = () => {
-    setRequest(initRequestParam);
+  const onChangeFilter = ({
+    field,
+    value,
+  }: {
+    field: string;
+    value: string | number | null;
+  }) => {
+    console.log({
+      field,
+      value,
+    });
+    setRequest((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
-  const onGetTodos = async () => {
+  const onGetTodos = async (params?: TodoRequestModel) => {
     showLoading();
     try {
-      const res = await todoApi.getTodos(request);
+      const q = params ?? request;
+      const res = await todoApi.getTodos(q);
       console.log(res.data);
       setTodos(res.data);
     } catch (err: unknown) {
@@ -87,8 +100,9 @@ const Management: React.FC = () => {
   };
 
   useEffect(() => {
-    onGetTodos();
-  }, []);
+    onGetTodos(request);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [request.status]);
 
   const onAddTodo = async () => {
     if (!createTodo.title.trim()) {
@@ -107,7 +121,7 @@ const Management: React.FC = () => {
       }
     } finally {
       hideLoading();
-      await onGetTodos();
+      await onGetTodos(request);
     }
   };
 
@@ -124,17 +138,41 @@ const Management: React.FC = () => {
       }
     } finally {
       hideLoading();
-      await onGetTodos();
+      await onGetTodos(request);
     }
   };
+
+  // useEffect: debounce khi request.keyword (hoặc những filter khác) thay đổi
+  useEffect(() => {
+    // nếu muốn debounce cho nhiều filter cùng lúc thì thêm vào dependency array
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // dùng snapshot của request (lấy giá trị hiện tại từ closure)
+    const snapshot = { ...request };
+
+    timeoutRef.current = window.setTimeout(() => {
+      onGetTodos(snapshot);
+      timeoutRef.current = null;
+    }, 500); // delay debounce
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [request.keyword]);
 
   return (
     <div className="management-wrapper">
       <div className="management-header">
         <Title level={4}>Xin chào, phan tam!</Title>
         <Text>
-          Bạn có {todos.filter((t) => !t.status).length} todo chưa hoàn thành và{" "}
-          {todos.filter((t) => t.status).length} todo đã hoàn thành.
+          Bạn có {todos.filter((t) => t.status == "PENDING").length} todo chưa
+          hoàn thành và {todos.filter((t) => t.status == "DONE").length} todo đã
+          hoàn thành.
         </Text>
       </div>
       <Card
@@ -169,8 +207,10 @@ const Management: React.FC = () => {
       <Input
         prefix={<SearchOutlined />}
         placeholder="Tìm kiếm todos..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        value={request.keyword}
+        onChange={(e) =>
+          onChangeValue({ field: "keyword", value: e.target.value })
+        }
         style={{ margin: "24px 0 12px 0" }}
         className="management-search"
       />
@@ -184,23 +224,24 @@ const Management: React.FC = () => {
             style={{
               cursor: "pointer",
               marginLeft: 8,
-              fontWeight: filter === opt.value ? "bold" : "600",
+              fontWeight: request.status === opt.value ? "bold" : "600",
             }}
-            onClick={() => setFilter(opt.value)}
+            onClick={() =>
+              onChangeFilter({ field: "status", value: opt.value })
+            }
           >
             {opt.label}{" "}
             <span>
               {
                 todos.filter((todo) => {
-                  if (opt.value === "active") return todo.status != "DONE";
-                  if (opt.value === "completed") return todo.status == "DONE";
+                  if (opt.value === "PENDING") return todo.status != "DONE";
+                  if (opt.value === "DONE") return todo.status == "DONE";
                   return true;
                 }).length
               }
             </span>
           </Button>
         ))}
-        <Button onClick={onChangeFilter}></Button>
       </div>
       <Card style={{ marginTop: 16, maxWidth: 800, width: "100%" }}>
         {todos.length === 0 ? (
