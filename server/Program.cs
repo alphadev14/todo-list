@@ -61,7 +61,7 @@ builder.Services.AddCors(options =>
 });
 
 // ========== JWT Authentication ==========
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "super-secret-key-123";
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "zx+w2tbmVmSApTH6N+I95qBeTF44g0QAQJPm7D/omlE=";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "todo-api";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -104,7 +104,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Đọc cổng từ biến môi trường (Render cung cấp PORT)
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8686";
 app.Run($"http://0.0.0.0:{port}");
 
 
